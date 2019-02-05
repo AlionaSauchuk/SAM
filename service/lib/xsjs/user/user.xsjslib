@@ -7,10 +7,19 @@ var user = function (connection) {
                 $.session.getUsername().toLocaleLowerCase(),
     */
 
+    this.doGet = function (obj) {
+        const result = connection.executeQuery('SELECT * FROM "SAM::User"');
+
+        result.forEach(x => $.trace.error(JSON.stringify(x)));
+
+        $.response.status = $.net.http.OK;
+        $.response.setBody(JSON.stringify(result));
+    };
+
 
     this.doPost = function (oUser) {
         //Get Next ID Number
-        oUser.usid = getNextval("usid");
+        oUser.usid = getNextval("SAM::usid");
 
         //generate query
         const statement = createPreparedInsertStatement(USER_TABLE, oValueObject);
@@ -55,6 +64,7 @@ var user = function (connection) {
         }
     }
 
+    
     function createPreparedInsertStatement(sTableName, oValueObject) {
         let oResult = {
             aParams: [],
@@ -75,7 +85,7 @@ var user = function (connection) {
         sColumnList = sColumnList.slice(0, -2);
         sValueList = sValueList.slice(0, -2);
 
-        oResult.sql = `insert into "${tableName}" (${sColumnList}) values (${sValueList})`;
+        oResult.sql = `insert into "${sTableName}" (${sColumnList}) values (${sValueList})`;
 
         $.trace.error("sql to insert: " + oResult.sql);
         return oResult;
