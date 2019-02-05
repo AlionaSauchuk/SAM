@@ -1,0 +1,50 @@
+﻿ID: SAM
+_schema-version: 2.1
+version: 0.0.1
+
+modules:
+    -
+        name: db
+        type: hdb
+        path: db
+        requires:
+            - {name: pt_hdi}
+        provides:
+            - {name: pt_db}
+        parameters:
+            memory: 128M
+            disk_quota: 128M
+    -
+        name: service
+        type: nodejs
+        path: service
+        requires:
+            - {name: pt_db}
+            - {name: pt_hdi}
+        provides:
+            - {name: pt_service, properties: {url: '${default-url}'}}
+        parameters:
+            memory: 128M
+            disk_quota: 128M
+resources:
+    -
+        name: pt_hdi
+        parameters:
+            service-plan: hdi-shared
+            service: hanatrial
+            config: {schema: SA6088249}
+        properties:
+            hdi-container-name: '${service-name}'
+        type: com.sap.xs.hdi-container
+    -
+        name: pt_conn
+        type: org.cloudfoundry.managed-service
+        parameters:
+            service: connectivity
+            service-plan: lite
+    -
+        name: pt_dest
+        type: org.cloudfoundry.managed-service
+        parameters:
+            service: destination
+            service-plan: lite
