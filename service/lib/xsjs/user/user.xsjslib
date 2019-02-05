@@ -7,10 +7,10 @@ var user = function (connection) {
                 $.session.getUsername().toLocaleLowerCase(),
     */
 
-    this.doGet = function (obj) {
+    this.doGet = function (obj) { //?????
         const result = connection.executeQuery('SELECT * FROM "SAM::User"');
 
-        result.forEach(x => $.trace.error(JSON.stringify(x)));
+      //  result.forEach(x => $.trace.error(JSON.stringify(x)));
 
         $.response.status = $.net.http.OK;
         $.response.setBody(JSON.stringify(result));
@@ -18,11 +18,13 @@ var user = function (connection) {
 
 
     this.doPost = function (oUser) {
+
+        $.trace.error("oUser:   "+JSON.stringify(oUser));
         //Get Next ID Number
         oUser.usid = getNextval("SAM::usid");
 
         //generate query
-        const statement = createPreparedInsertStatement(USER_TABLE, oValueObject);
+        const statement = createPreparedInsertStatement(USER_TABLE, oUser);
         //execute update
         connection.executeUpdate(statement.sql, statement.aValues);
 
@@ -47,17 +49,13 @@ var user = function (connection) {
     };
 
 
-
-
-
-
-
-
     function getNextval(sSeqName) {
         const statement = `select "${sSeqName}".NEXTVAL as "ID" from dummy`;
+       
         const result = connection.executeQuery(statement);
 
         if (result.length > 0) {
+            $.trace.error("ID: "+result[0].ID);
             return result[0].ID;
         } else {
             throw new Error('ID was not generated');
@@ -74,15 +72,21 @@ var user = function (connection) {
 
         let sColumnList = '', sValueList = '';
 
-        oValueObject.forEach((value, key) => {
-            sColumnList += `"${key}",`;
-            sValueList += "?, ";
-
-            result.aValues.push(value);
-            result.aParams.push(key);
+        Object.keys(oValueObject).forEach(value => {
+            sColumnList += `"${value}",`;
+            oResult.aParams.push(value);
         });
+
+        Object.values(oValueObject).forEach(value => {
+            sValueList += "?, ";
+            oResult.aValues.push(value);
+        });
+
+        $.trace.error("svalue " + sValueList);
+        $.trace.error("scolumn: " + sColumnList);
+
         // Remove the last unnecessary comma and blank
-        sColumnList = sColumnList.slice(0, -2);
+        sColumnList = sColumnList.slice(0, -1);
         sValueList = sValueList.slice(0, -2);
 
         oResult.sql = `insert into "${sTableName}" (${sColumnList}) values (${sValueList})`;
