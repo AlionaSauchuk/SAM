@@ -50,24 +50,12 @@ var statementConstructor = function () {
         sColumnList = sColumnList.slice(0, -1);
         sValueList = sValueList.slice(0, -2);
 
-        oResult.sql = `UPDATE "${sTableName}" SET "name"='${sValueList}' WHERE "usid"=002;  values ()`;
+        oResult.sql = `UPDATE "${sTableName}" SET "name"='${oValueObject.name}' WHERE "usid"=${oValueObject.usid};`;
 
         $.trace.error("sql to update: " + oResult.sql);        
         return oResult;
     };
 
-    this.createPreparedDeleteStatement = function (sTableName, oConditionObject) {
-        let oResult = {
-            aParams: [],
-            aValues: [],
-            sql: "",
-        };
-
-        oResult.sql = `DELETE FROM "${sTableName}" WHERE "usid"=${oConditionObject.usid};`;
-
-        $.trace.error("sql to delete: " + oResult.sql);
-        return oResult;
-    };
 };
 
 
@@ -76,6 +64,8 @@ var user = function (connection) {
     const statementConstructorLib = new statementConstructor();
 
     const USER_TABLE = "SAM::User";
+    const ADDRESS_TABLE = "SAM::ExtraInfo.Address";
+    const CARS_TABLE = "SAM::ExtraInfo.Cars";
     /*
             const USER = $.session.securityContext.userInfo.familyName ?
                 $.session.securityContext.userInfo.familyName + " " + $.session.securityContext.userInfo.givenName :
@@ -138,9 +128,17 @@ var user = function (connection) {
 
     this.doDelete = function (oUser) {
 
-        const statement = statementConstructorLib.createPreparedDeleteStatement(USER_TABLE, oUser);
+        let statement = `DELETE FROM "${ADDRESS_TABLE}" WHERE "usid"=${oUser.usid};`;
+        $.trace.error("sql to delete: " + statement);
+        connection.executeUpdate(statement);
 
-        connection.executeUpdate(statement.sql, statement.aValues);
+        statement = `DELETE FROM "${CARS_TABLE}" WHERE "usid"=${oUser.usid};`;
+        $.trace.error("sql to delete: " + statement);
+        connection.executeUpdate(statement);
+
+        statement = `DELETE FROM "${USER_TABLE}" WHERE "usid"=${oUser.usid};`;
+        connection.executeUpdate(statement);
+
         connection.commit();
 
         $.response.status = $.net.http.OK;
