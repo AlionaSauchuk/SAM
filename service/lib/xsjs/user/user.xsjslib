@@ -34,8 +34,24 @@ var user = function (connection) {
     };
 
 
-    this.doPut = function (obj) {
-        //TODO
+    this.doPut = function (oUser) {
+        //generate query
+         let oResult = {
+            aParams: [],
+            aValues: [],
+            sql: "",
+        };
+
+        oResult.sql = `UPDATE "${USER_TABLE}" SET "name"='${oUser.name}' WHERE "usid"=${oUser.usid};`;
+
+        $.trace.error("sql to update: " + oResult.sql);
+       // const statement = createPreparedUpdateStatement(USER_TABLE, oUser);
+        //execute update
+        connection.executeUpdate(oResult.sql, oResult.aValues);
+
+        connection.commit();
+        $.response.status = $.net.http.OK;
+        $.response.setBody(JSON.stringify(oUser));
     };
 
 
@@ -90,6 +106,38 @@ var user = function (connection) {
         sValueList = sValueList.slice(0, -2);
 
         oResult.sql = `insert into "${sTableName}" (${sColumnList}) values (${sValueList})`;
+
+        $.trace.error("sql to insert: " + oResult.sql);
+        return oResult;
+    };
+
+    function createPreparedUpdateStatement(sTableName, oValueObject) {
+        let oResult = {
+            aParams: [],
+            aValues: [],
+            sql: "",
+        };
+
+        let sColumnList = '', sValueList = '';
+
+        Object.keys(oValueObject).forEach(value => {
+            sColumnList += `"${value}",`;
+            oResult.aParams.push(value);
+        });
+
+        Object.values(oValueObject).forEach(value => {
+            sValueList += "?, ";
+            oResult.aValues.push(value);
+        });
+
+        $.trace.error("svalue " + sValueList);
+        $.trace.error("scolumn: " + sColumnList);
+
+        // Remove the last unnecessary comma and blank
+        sColumnList = sColumnList.slice(0, -1);
+        sValueList = sValueList.slice(0, -2);
+
+        oResult.sql = `UPDATE "${sTableName}" SET "name"='${sValueList}' WHERE "usid"=002;  values ()`;
 
         $.trace.error("sql to insert: " + oResult.sql);
         return oResult;
