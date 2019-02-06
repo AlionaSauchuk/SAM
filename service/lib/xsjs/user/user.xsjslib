@@ -55,8 +55,8 @@ var user = function (connection) {
     };
 
 
-    this.doDelete = function (usid) {
-        const statement = createPreparedDeleteStatement(USER_TABLE, {usid: usid});
+    this.doDelete = function (oUser) {
+        const statement = createPreparedDeleteStatement(USER_TABLE, oUser);
         connection.executeUpdate(statement.sql, statement.aValues);
 
         connection.commit();
@@ -150,20 +150,7 @@ var user = function (connection) {
             sql: "",
         };
 
-        let sWhereClause = '';
-        var name, value, condIndex, condition;
-        oConditionObject.forEach((value, key) => {
-            whereClause += `"${key}"=? and `;
-            oResult.aValues.push(value);
-            oResult.aParams.push(key);
-        });
-        // Remove the last unnecessary AND
-        sWhereClause = sWhereClause.slice(0, -5);
-        if (sWhereClause.length > 0) {
-            sWhereClause = " where " + sWhereClause;
-        }
-
-        oResult.sql = `delete from "${sTableName}" ${sWhereClause}`;
+        oResult.sql = `DELETE FROM "${sTableName}" WHERE "usid"=${oConditionObject.usid};`;
 
         $.trace.error("sql to delete: " + oResult.sql);
         return oResult;
