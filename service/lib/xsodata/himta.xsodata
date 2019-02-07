@@ -2,7 +2,7 @@ service namespace "SAM"{
 
     "SAM::User" as "Users"
                 navigates("Users_2_Address" as "toAddress", "Users_2_Cars" as "toCars")
-            create forbidden
+            create using "xsjs.user:usersCreate.xsjslib::usersCreate"
             update forbidden
             delete forbidden;
 
